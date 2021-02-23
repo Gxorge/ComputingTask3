@@ -99,11 +99,6 @@ public class GameController : MonoBehaviour
         return card;
     }
 
-    private void ReturnCard(Card card)
-    {
-        _cards.Add(card);
-    }
-
     private void AddCardToPlayer(int player, Card card)
     {
         if (player == 1)
@@ -163,28 +158,46 @@ public class GameController : MonoBehaviour
             UpdateUINames(true, 0);
         }
     }
-
-    public void ClickContinueButton()
+    
+    private void CreateCard(Card card, int player, bool real)
     {
-        _currentPlayer = 1;
-        
-        Destroy(_p1CardObj);
-        _p1CardDraw = null;
-        
-        Destroy(_p2CardObj);
-        _p2CardDraw = null;
+        GameObject c = Instantiate(cardPrefab, (player == 1 ? p1Gizmo.transform.localPosition : p2Gizmo.transform.localPosition), Quaternion.identity);
+        c.transform.SetParent(CardGame.transform);
+        c.transform.localScale = new Vector3(1, 1, 1);
 
-        roundWinText.enabled = false;
-        continueButton.gameObject.SetActive(false);
+        TMP_Text top = c.transform.Find("TopNum").GetComponent<TMP_Text>();
+        TMP_Text bottom = c.transform.Find("BottomNum").GetComponent<TMP_Text>();
 
-        if (_cards.Count <= 0)
+        top.text = card.Number.ToString();
+        bottom.text = card.Number.ToString();
+
+        if (card.Colour == 3) // i had to use an ass shade of yellow since unity sucks
         {
-            GameOver();
-            return;
+            top.color = Color.black;
+            bottom.color = Color.black;
         }
 
-        _canDraw = true;
-        UpdateUINames(true, 0);
+        c.GetComponent<Image>().color = ColourFromCard(card);
+        
+        Debug.Log("created card with colour " + ColourNameFromCard(card) + " number " + card.Number);
+
+        if (real)
+        {
+            if (player == 1)
+            {
+                _p1CardObj = c;
+                _p1CardDraw = card;
+            }
+            else
+            {
+                _p2CardObj = c;
+                _p2CardDraw = card;
+            }   
+        }   
+        else
+        {
+            Destroy(c, 5);
+        }
     }
 
     private void GameOver()
@@ -221,48 +234,7 @@ public class GameController : MonoBehaviour
 
         FinishedGame.enabled = true;
     }
-
-    private void CreateCard(Card card, int player, bool real)
-    {
-        GameObject c = Instantiate(cardPrefab, (player == 1 ? p1Gizmo.transform.localPosition : p2Gizmo.transform.localPosition), Quaternion.identity);
-        c.transform.SetParent(CardGame.transform);
-        c.transform.localScale = new Vector3(1, 1, 1);
-
-        TMP_Text top = c.transform.Find("TopNum").GetComponent<TMP_Text>();
-        TMP_Text bottom = c.transform.Find("BottomNum").GetComponent<TMP_Text>();
-
-        top.text = card.Number.ToString();
-        bottom.text = card.Number.ToString();
-
-        if (card.Colour == 3) // i had to use an ass shade of yellow since unity sucks
-        {
-            top.color = Color.black;
-            bottom.color = Color.black;
-        }
-
-        c.GetComponent<Image>().color = ColourFromCard(card);
-        
-        Debug.Log("created card with colour " + ColourNameFromCard(card) + " number " + card.Number);
-
-        if (real)
-        {
-            if (player == 1)
-            {
-                _p1CardObj = c;
-                _p1CardDraw = card;
-            }
-            else
-            {
-                _p2CardObj = c;
-                _p2CardDraw = card;
-            }   
-        }
-        else
-        {
-            Destroy(this, 5);
-        }
-
-    }
+    
 
     private void UpdateUINames(bool colour, int winner)
     {
@@ -321,14 +293,6 @@ public class GameController : MonoBehaviour
         cardsLeftText.text = "Cards Left: " + _cards.Count;
     }
 
-    public void PileClick()
-    {
-        if (!_canDraw || !gameActive)
-            return;
-        
-        TakeTurn();
-    }
-
     private Color ColourFromCard(Card card)
     {
         switch (card.Colour)
@@ -373,6 +337,37 @@ public class GameController : MonoBehaviour
                 return "Error";
             }
         }
+    }
+    
+    public void ClickContinueButton()
+    {
+        _currentPlayer = 1;
+        
+        Destroy(_p1CardObj);
+        _p1CardDraw = null;
+        
+        Destroy(_p2CardObj);
+        _p2CardDraw = null;
+
+        roundWinText.enabled = false;
+        continueButton.gameObject.SetActive(false);
+
+        if (_cards.Count <= 0)
+        {
+            GameOver();
+            return;
+        }
+
+        _canDraw = true;
+        UpdateUINames(true, 0);
+    }
+    
+    public void PileClick()
+    {
+        if (!_canDraw || !gameActive)
+            return;
+        
+        TakeTurn();
     }
 
     public void ExitGame()
