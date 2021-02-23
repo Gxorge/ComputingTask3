@@ -84,7 +84,7 @@ public class GameController : MonoBehaviour
         _p1Cards = new List<Card>();
         _p2Cards = new List<Card>();
         
-        UpdateUINames(true);
+        UpdateUINames(true, 0);
         UpdateCardsLeft();
 
         gameActive = true;
@@ -155,13 +155,13 @@ public class GameController : MonoBehaviour
             roundWinText.enabled = true;
             
             continueButton.gameObject.SetActive(true);
+            UpdateUINames(false, winner);
         }
         else
         {
             _currentPlayer = 2;
+            UpdateUINames(true, 0);
         }
-        
-        UpdateUINames(true);
     }
 
     public void ClickContinueButton()
@@ -184,7 +184,7 @@ public class GameController : MonoBehaviour
         }
 
         _canDraw = true;
-        UpdateUINames(true);
+        UpdateUINames(true, 0);
     }
 
     private void GameOver()
@@ -264,13 +264,30 @@ public class GameController : MonoBehaviour
 
     }
 
-    private void UpdateUINames(bool colour)
+    private void UpdateUINames(bool colour, int winner)
     {
         TMP_Text p1 = GameObject.Find("PlayerOneText").GetComponent<TMP_Text>();
         TMP_Text p2 = GameObject.Find("PlayerTwoText").GetComponent<TMP_Text>();
         
         p1.text = GenerateUIName(1);
         p2.text = GenerateUIName(2);
+
+        if (winner != 0)
+        {
+            if (winner == 1)
+            {
+                p1.color = Color.yellow;
+                p2.color = Color.white;
+            }
+            else
+            {
+                p2.color = Color.yellow;
+                p1.color = Color.white;
+            }
+
+            return;
+        }
+        
         if (colour)
         {
             if (_currentPlayer == 1)
